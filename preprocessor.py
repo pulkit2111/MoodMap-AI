@@ -16,7 +16,6 @@ def preprocess(data):
     df = pd.DataFrame({'user_message':messages, 'date':dates})
 
     df['date'] = pd.to_datetime(df['date'], format='%d/%m/%Y, %I:%M %p - ')
-    # df['date'] = df['date'].dt.strftime('%d/%m/%Y, %I:%M %p')
 
     #separate users and messages
     users = []
@@ -50,7 +49,5 @@ def preprocess(data):
         else:
             period.append(str(hour) + "-" + str(hour + 1))
     df['period'] = period
-
-    print(df.head())
 
     return df

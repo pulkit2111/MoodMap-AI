@@ -3,8 +3,39 @@ from wordcloud import WordCloud
 import pandas as pd
 from collections import Counter
 import emoji
-
+from TwitterPostAnalysis import predictor
+ 
 extract = URLExtract()
+
+def wordsentiment(selected_user,df):
+
+    if selected_user != 'Overall':
+        df = df[df['user'] == selected_user]
+
+    temp = df[df['user'] != 'group_notification']
+    temp = temp[temp['message'] != '<Media omitted>\n']
+
+    positive=0
+    negative=0
+    neutral=0
+    negative_messages=[]
+    positive_messages=[]
+    neutral_messages=[]
+
+    for message in temp['message']:
+        predict=predictor.sentimentAnalyze(message)
+        if(predict==0):
+            negative+=1
+            negative_messages.append(message)
+        elif(predict==1):
+            positive+=1
+            positive_messages.append(message)
+        else:
+            neutral+=1
+            neutral_messages.append(message)
+    
+    return [positive, negative, neutral, negative_messages, positive_messages, neutral_messages]
+
 
 def fetch_stats(selected_user,df):
 
