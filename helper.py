@@ -18,23 +18,41 @@ def wordsentiment(selected_user,df):
     positive=0
     negative=0
     neutral=0
-    negative_messages=[]
-    positive_messages=[]
-    neutral_messages=[]
+    sentiments=[]
 
     for message in temp['message']:
         predict=predictor.sentimentAnalyze(message)
         if(predict==0):
             negative+=1
-            negative_messages.append(message)
+            sentiments.append('negative')
         elif(predict==1):
             positive+=1
-            positive_messages.append(message)
+            sentiments.append('positive')
         else:
             neutral+=1
-            neutral_messages.append(message)
+            sentiments.append('neutral')
+
+    # Create a new DataFrame for styling
+    sentiment_df = pd.DataFrame({
+        'Message': temp['message'].values,
+        'Sentiment': sentiments
+    })
+
+    # Define a function to apply styles
+    def highlight_sentiment(row):
+        color = ''
+        if row['Sentiment'] == 'positive':
+            color = 'background-color: #d4edda'
+        elif row['Sentiment'] == 'negative':
+            color = 'background-color: #f8d7da'
+        elif row['Sentiment'] == 'neutral':
+            color = 'background-color: #d1ecf1'
+        return [color, '']  # Apply color to both columns
+
+    # Apply styling
+    styled_df = sentiment_df.style.apply(highlight_sentiment, axis=1)
     
-    return [positive, negative, neutral, negative_messages, positive_messages, neutral_messages]
+    return [positive, negative, neutral, styled_df]
 
 
 def fetch_stats(selected_user,df):

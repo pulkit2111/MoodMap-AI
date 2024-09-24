@@ -3,11 +3,13 @@ import preprocessor, helper
 import matplotlib.pyplot as plt
 import seaborn as sns
 from TwitterPostAnalysis import twitterUserFetch
+import gmail_fetch
+import pandas as pd
 
 plt.rcParams['font.family']='Segoe UI Emoji'
 
 analysis_type = st.sidebar.selectbox(
-    "Choose the Analysis Type", ["WhatsApp Chat Analysis", "Twitter User Description"]
+    "Choose the Analysis Type", ["WhatsApp Chat Analysis", "Twitter User Description" , "Gmail Mails Analysis"]
 )
 
 if analysis_type=="WhatsApp Chat Analysis":
@@ -58,14 +60,11 @@ if analysis_type=="WhatsApp Chat Analysis":
                 st.title(num_links)
 
             #sentiment analyze
-            positive, negative, neutral, negative_messages, positive_messages, neutral_messages=helper.wordsentiment(selected_user, df)
+            positive, negative, neutral, styled_df=helper.wordsentiment(selected_user, df)
+            st.dataframe(styled_df)
             st.title(f'Positive messages: {positive}')  # Use f-string to combine text and value
             st.title(f'Negative messages: {negative}')
             st.title(f'Neutral messages: {neutral}')
-
-            st.write("Negative messages: ", negative_messages)
-            st.write("Positive messages: ", positive_messages)
-            st.write("Neutral messages: ", neutral_messages)
 
             # most common words
             most_common_df = helper.most_common_words(selected_user,df)
@@ -169,3 +168,14 @@ elif analysis_type=="Twitter User Description":
             tweet_content = twitterUserFetch.get_user_info(tweet_id)
             st.write("User info: ")
             st.write(tweet_content)
+
+elif analysis_type=="Gmail Mails Analysis":
+    st.title('Gmail analysis')
+    emails=st.number_input("Enter the amount of emails you want to see:", value=5, min_value=1)
+    sender=st.text_input("Enter the name of sender :")
+    df=pd.DataFrame(gmail_fetch.fetch_emails(emails,sender))
+    df.index = range(1, len(df) + 1)
+    if not df.empty:
+        st.dataframe(df)  # Display the dataframe in Streamlit
+    else:
+        st.write("No emails to display.")
