@@ -5,12 +5,21 @@ import seaborn as sns
 from TwitterPostAnalysis import twitterUserFetch
 import gmail_fetch
 import pandas as pd
+import spam_predictor
+import os
 
 plt.rcParams['font.family']='Segoe UI Emoji'
 
 analysis_type = st.sidebar.selectbox(
     "Choose the Analysis Type", ["WhatsApp Chat Analysis", "Twitter User Description" , "Gmail Mails Analysis"]
 )
+
+def logout():
+    """Logs the user out by removing the token.json file."""
+    if os.path.exists('token.json'):
+        os.remove('token.json')
+        st.success("Logged out successfully!")
+        st.session_state.logged_in = False  # Update session state
 
 if analysis_type=="WhatsApp Chat Analysis":
     st.sidebar.title("WhatsApp Chat Analyzer")
@@ -170,12 +179,45 @@ elif analysis_type=="Twitter User Description":
             st.write(tweet_content)
 
 elif analysis_type=="Gmail Mails Analysis":
-    st.title('Gmail analysis')
-    emails=st.number_input("Enter the amount of emails you want to see:", value=5, min_value=1)
-    sender=st.text_input("Enter the name of sender :")
-    df=pd.DataFrame(gmail_fetch.fetch_emails(emails,sender))
-    df.index = range(1, len(df) + 1)
-    if not df.empty:
-        st.dataframe(df)  # Display the dataframe in Streamlit
+    # Initialize session state to keep track of login status
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = os.path.exists('token.json')
+
+    # Streamlit app
+    st.title('Gmail Analysis')
+
+    # Check login status and update UI accordingly
+    if st.session_state.logged_in:
+        st.sidebar.write("You are logged in.")
+
+        # Show the logout button if the user is logged in
+        if st.sidebar.button("Logout"):
+            logout()
+            st.rerun()  # This will refresh the app after logout
+
     else:
-        st.write("No emails to display.")
+        st.sidebar.write("You are not logged in.")
+
+        # Show the login button if the user is not logged in
+        if st.sidebar.button("Login"):
+            gmail_fetch.gmail_authenticate()  # Authenticate the user
+            st.session_state.logged_in = True  # Update session state after login
+            st.rerun()  # Refresh the app after login
+
+    # Allow the user to fetch emails if they are logged in
+    if st.session_state.logged_in:
+        # Input for the number of emails and sender name
+        emails = st.number_input("Enter the number of emails you want to see:", value=5, min_value=1)
+        sender = st.text_input("Enter the sender's email:")
+
+        # Fetch the emails
+        # Assuming gmail_fetch.fetch_emails is a function that returns a DataFrame
+        df = pd.DataFrame(gmail_fetch.fetch_emails(emails, sender))  # Uncomment this line to fetch emails
+        df.index = range(1, len(df) + 1)
+
+        # Display the emails in a dataframe if not empty
+        if not df.empty:
+            st.dataframe(df)
+        else:
+            st.write("No emails to display.")
+

@@ -102,7 +102,7 @@ else:
     X_train = vectorizer.fit_transform(X_train)  # Fit and transform on training data
     X_test = vectorizer.transform(X_test)  # Transform test data based on training fit
     # Initialize and train the Logistic Regression model
-    model = LogisticRegression(max_iter=1000)
+    model = LogisticRegression(max_iter=50)
     model.fit(X_train, Y_train)
     # Save the trained model and vectorizer to disk
     joblib.dump(vectorizer, VECTORIZER_PATH)
